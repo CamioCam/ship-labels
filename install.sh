@@ -61,6 +61,7 @@ find_python() {
     # 3.8 floor in the same call.
     local candidate
     for candidate in \
+        "${SHIP_LABELS_PYTHON:-}" \
         /opt/homebrew/bin/python3 \
         /usr/local/bin/python3 \
         "$(command -v python3 2>/dev/null || true)" \
