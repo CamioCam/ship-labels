@@ -1,0 +1,19 @@
+{
+  "_comment": [
+    "Per-box shipping specs, keyed by the box code used in the order form's",
+    "'How many Box ____?' columns. Dimensions are inches, weight is pounds,",
+    "and each box ships as its own package (qty 3 = 3 packages, 3 tracking",
+    "numbers). Add an entry here before shipping a box type for the first",
+    "time - ship-csv refuses to guess.",
+    "",
+    "Copy this file to boxes.json and put your real box specs in it.",
+    "boxes.json is gitignored so your SKUs and dimensions stay private."
+  ],
+  "1000A": {
+    "weight": 1.0,
+    "length": 6,
+    "width": 4,
+    "height": 4,
+    "description": "Box 1000A"
+  }
+}

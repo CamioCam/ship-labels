@@ -1,0 +1,24 @@
+{
+  "description": "Test shipment",
+  "service": "03",
+  "to": {
+    "name": "Jane Recipient",
+    "attention": "Jane Recipient",
+    "phone": "2125551212",
+    "address": ["350 Fifth Avenue", "Floor 20"],
+    "city": "New York",
+    "state": "NY",
+    "zip": "10118",
+    "country": "US",
+    "residential": false
+  },
+  "package": {
+    "description": "Merchandise",
+    "packaging": "02",
+    "weight": 3,
+    "weight_unit": "LBS",
+    "length": 12,
+    "width": 9,
+    "height": 4
+  }
+}

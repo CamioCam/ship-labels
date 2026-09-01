@@ -1,0 +1,11 @@
+{
+  "name": "YOUR COMPANY NAME",
+  "attention": "Your Name",
+  "phone": "5555551234",
+  "email": "you@example.com",
+  "address": ["123 Your Street Suite 100"],
+  "city": "Your City",
+  "state": "CA",
+  "zip": "90001",
+  "country": "US"
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "description": "Order 1001",
+    "service": "03",
+    "to": {
+      "name": "Jane Recipient",
+      "phone": "2125551212",
+      "address": ["350 Fifth Avenue", "Floor 20"],
+      "city": "New York",
+      "state": "NY",
+      "zip": "10118",
+      "residential": false
+    },
+    "package": { "weight": 3, "length": 12, "width": 9, "height": 4 }
+  },
+  {
+    "description": "Order 1002",
+    "service": "02",
+    "to": {
+      "name": "Sam Buyer",
+      "phone": "3125551313",
+      "address": ["233 South Wacker Drive"],
+      "city": "Chicago",
+      "state": "IL",
+      "zip": "60606",
+      "residential": true
+    },
+    "package": { "weight": 1.5, "length": 9, "width": 6, "height": 3, "declared_value": 120 }
+  }
+]

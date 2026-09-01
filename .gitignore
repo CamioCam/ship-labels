@@ -1,0 +1,29 @@
+# Secrets
+.env
+.token.json
+
+# Real ship-from address
+shipper.json
+
+# Real box specs (SKUs and dimensions); boxes.example.json is the template
+boxes.json
+
+# Generated output
+labels/*
+previews/*
+!labels/.gitkeep
+!previews/.gitkeep
+shipments_log.csv
+
+# Real shipment data
+shipments/*.json
+!shipments/sample.json
+!shipments/batch-example.json
+
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# macOS
+.DS_Store
