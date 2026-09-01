@@ -41,7 +41,11 @@ die()  { printf '\n%s\n\n' "$*" >&2; exit 1; }
 reattach_terminal() {
     # Piped to bash, stdin is the script itself. Anything that reads would
     # swallow the rest of this file. Point stdin at the real terminal.
-    if [ ! -t 0 ] && [ -r /dev/tty ]; then
+    # The subshell probe matters: a failed redirect on `exec` is fatal, and
+    # /dev/tty can be present but unusable when there is no controlling
+    # terminal (cron, CI, a non-interactive ssh). Nothing here reads stdin
+    # today, so losing the reattach is harmless -- dying over it is not.
+    if [ ! -t 0 ] && [ -c /dev/tty ] && (exec </dev/tty) 2>/dev/null; then
         exec </dev/tty
     fi
 }
