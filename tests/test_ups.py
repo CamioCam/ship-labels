@@ -47,7 +47,7 @@ SHIPPER = {
     "email": "shipping@example.com",
     "address": ["100 Warehouse Way"],
     "city": "Springfield",
-    "state": "CA",
+    "state": "IL",
     "zip": "62704",
 }
 

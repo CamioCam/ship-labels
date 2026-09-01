@@ -25,7 +25,10 @@ BIN_DIR="$HOME/.local/bin"
 
 # Replaced on every run.
 CODE_FILES="ups.py requirements.txt README.md FOR-LISA.md .env.example shipper.example.json boxes.example.json"
-CODE_DIRS="tests shipments"
+# Wholly-replaced directories. shipments/ is deliberately NOT here: it
+# ships two examples but is also where hand-written shipment files live,
+# so it is merged rather than replaced.
+CODE_DIRS="tests"
 
 PYTHON=""
 VPY=""
@@ -121,12 +124,21 @@ download() {
 # ------------------------------------------------------------------ install
 
 install_code() {
-    mkdir -p "$APP_DIR" "$APP_DIR/labels" "$APP_DIR/previews"
-    [ -w "$APP_DIR" ] || die "Cannot write to $APP_DIR. Close anything using it and try again."
+    # Order matters: test writability before the mkdir it guards, or the
+    # raw "mkdir: Permission denied" wins and the explanation never prints.
+    if [ -e "$APP_DIR" ]; then
+        [ -w "$APP_DIR" ] || die "Cannot write to $APP_DIR.
+
+  Close anything that is using it, or check the folder's permissions."
+    else
+        mkdir -p "$APP_DIR" || die "Cannot create $APP_DIR."
+    fi
+    mkdir -p "$APP_DIR/labels" "$APP_DIR/previews" || die "Cannot write inside $APP_DIR."
 
     local f d
     for f in $CODE_FILES; do
-        [ -e "$TMP/src/$f" ] && cp "$TMP/src/$f" "$APP_DIR/$f"
+        [ -e "$TMP/src/$f" ] || continue
+        cp "$TMP/src/$f" "$APP_DIR/$f" || die "Could not update $f in $APP_DIR."
     done
     for d in $CODE_DIRS; do
         [ -e "$TMP/src/$d" ] || continue
@@ -135,6 +147,16 @@ install_code() {
         rm -rf "$APP_DIR/$d"
         mv "$APP_DIR/$d.new" "$APP_DIR/$d"
     done
+    # Merged, not replaced: refresh the shipped examples and leave anything
+    # the operator wrote in place.
+    if [ -d "$TMP/src/shipments" ]; then
+        mkdir -p "$APP_DIR/shipments"
+        for f in "$TMP/src/shipments"/*; do
+            [ -e "$f" ] || continue
+            cp "$f" "$APP_DIR/shipments/" || die "Could not update the shipment examples."
+        done
+    fi
+
     chmod +x "$APP_DIR/ups.py" 2>/dev/null || true
 }
 
@@ -147,6 +169,13 @@ seed_config() {
     fi
     [ -e "$APP_DIR/shipper.json" ] || cp "$TMP/src/shipper.example.json" "$APP_DIR/shipper.json"
     [ -e "$APP_DIR/boxes.json" ]   || cp "$TMP/src/boxes.example.json"   "$APP_DIR/boxes.json"
+
+    # Every run, not just the seeding one. The .env that matters is the one
+    # handed over afterwards, and it arrives with whatever mode the transfer
+    # gave it -- usually world-readable.
+    if [ -e "$APP_DIR/.env" ]; then
+        chmod 600 "$APP_DIR/.env" 2>/dev/null || true
+    fi
 }
 
 build_venv() {
@@ -157,7 +186,9 @@ build_venv() {
     else
         say "Setting up Python..."
         rm -rf "$APP_DIR/.venv"
-        "$PYTHON" -m venv "$APP_DIR/.venv"
+        "$PYTHON" -m venv "$APP_DIR/.venv" || die "Could not set up Python in $APP_DIR.
+
+  Check there is free disk space, then run this installer again."
     fi
 
     # A virtual environment, always. Some Python installs refuse a plain
@@ -208,7 +239,11 @@ WRAPPER
 # ------------------------------------------------------------------- verify
 
 verify() {
-    if ! grep -qE '^UPS_CLIENT_ID=.+' "$APP_DIR/.env" 2>/dev/null; then
+    # As permissive as load_dotenv(), which strips whitespace around both
+    # the key and the value. A stricter test here would claim she has no
+    # credentials when the tool would read them fine.
+    if ! grep -qE '^[[:space:]]*UPS_CLIENT_ID[[:space:]]*=[[:space:]]*[^[:space:]]' \
+             "$APP_DIR/.env" 2>/dev/null; then
         # Expected on a first install. Not a failure.
         cat <<MSG
 
@@ -253,6 +288,7 @@ Installed, but UPS did not accept the credentials.
   Nothing was charged and no labels were created.
   Fix it and run this installer again -- re-running is always safe.
 MSG
+        return 1
     fi
 }
 
@@ -265,7 +301,12 @@ main() {
     seed_config
     build_venv
     install_command
-    verify
+
+    # Report the credential check in the exit status too, so this is scriptable
+    # and not only human-readable.
+    local status=0
+    verify || status=$?
+
     if [ "$PATH_NOTE" -eq 1 ]; then
         cat <<'MSG'
 
@@ -273,6 +314,7 @@ main() {
   typing "ups". The window you are in now has not learned the command yet.
 MSG
     fi
+    return "$status"
 }
 
 # Called last on purpose. If the download of this script is cut short, bash
