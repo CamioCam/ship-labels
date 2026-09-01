@@ -172,6 +172,13 @@ build_venv() {
   Try again on a different network."
     fi
 
+    # Apple's system Python is linked against LibreSSL, which urllib3 v2 does
+    # not support: it prints a NotOpenSSLWarning on every single run, which
+    # looks alarming and buries the real output. Pin v1 only where needed.
+    if ! "$VPY" -c 'import ssl, sys; sys.exit(0 if "OpenSSL" in ssl.OPENSSL_VERSION else 1)' >/dev/null 2>&1; then
+        "$VPY" -m pip install --quiet --disable-pip-version-check "urllib3<2" >/dev/null 2>&1 || true
+    fi
+
     # Pillow only renders GIF/PNG previews, which the label workflow never
     # uses. Installed separately so a build failure cannot take requests
     # down with it.
